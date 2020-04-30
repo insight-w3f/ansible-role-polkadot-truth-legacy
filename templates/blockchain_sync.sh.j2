@@ -12,7 +12,7 @@ echo "Stopping client..."
 systemctl stop polkadot.service
 
 echo "Syncing blockchain to S3..."
-aws s3 sync /data/polkadot/chains/ksmm3/ s3://{{sync_bucket_uri}}
+aws s3 sync /data/polkadot/chains/ksmcc3/ s3://{{sync_bucket_uri}}
 
 echo "Restarting client..."
 systemctl start polkadot.service
