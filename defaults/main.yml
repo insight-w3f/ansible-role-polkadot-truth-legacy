@@ -1,2 +1,7 @@
 ---
 # defaults file for polkadot-truth-node
+
+region: "us-east-1"
+aws_access_key_id: "ABC123"
+aws_secret_access_key: "ABC123"
+sync_bucket_uri: "test"

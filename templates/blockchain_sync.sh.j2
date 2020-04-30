@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -eo pipefail
+
+echo "Ensuring client is not in blocksync status..."
+until [ $(curl -sS -H "Content-Type: application/json" -d '{"id": 1, "jsonrpc": "2.0", "method": "system_health", "params": []}' http://localhost:9933 | jq -r '.result.isSyncing') == "false" ]
+do
+  printf '.'
+  sleep 1
+done
+
+echo "Stopping client..."
+systemctl stop polkadot.service
+
+echo "Syncing blockchain to S3..."
+aws s3 sync /data/polkadot/chains/ksmm3/ s3://{{sync_bucket_uri}}
+
+echo "Restarting client..."
+systemctl start polkadot.service
+
+echo "Sync complete!"

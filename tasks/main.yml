@@ -1,2 +1,66 @@
 ---
 # tasks file for polkadot-truth-node
+- name: check to see if awscli installed
+  command: aws --version
+  register: command_result
+  ignore_errors: yes
+  changed_when: command_result.rc != 2
+
+- name: install awscli
+  block:
+    - name: install unzip
+      apt:
+        name: unzip
+        state: present
+        update_cache: yes
+
+    - name: create download dir
+      file:
+        path: /root/awscli
+        state: directory
+        mode: '0755'
+
+    - name: download awscli
+      get_url:
+        url: 'https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip'
+        dest: /root/awscli/archive.zip
+        mode: '0700'
+
+    - name: unarchive awscli
+      unarchive:
+        src: /root/awscli/archive.zip
+        remote_src: yes
+        dest: /root/awscli
+
+    - name: install awscli
+      command: /root/awscli/aws/install
+  when: command_result.rc != 0
+
+- name: create awscli config folders
+  file:
+    path: /root/.aws
+    state: directory
+
+- name: create awscli config
+  template:
+    src: config.j2
+    dest: /root/.aws/config
+
+- name: create awscli credentials
+  template:
+    src: credentials.j2
+    dest: /root/.aws/credentials
+
+- name: copy sync script
+  template:
+    src: blockchain_sync.sh.j2
+    dest: /root/blockchain_sync.sh
+    owner: root
+    group: root
+    mode: '0700'
+
+- name: register sync script to cron
+  cron:
+    name: "Blockchain sync to S3"
+    minute: "*/15"
+    job: "/root/blockchain_sync.sh"
