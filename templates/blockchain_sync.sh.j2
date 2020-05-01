@@ -2,11 +2,18 @@
 set -eo pipefail
 
 echo "Ensuring client is not in blocksync status..."
-until [ $(curl -sS -H "Content-Type: application/json" -d '{"id": 1, "jsonrpc": "2.0", "method": "system_health", "params": []}' http://localhost:9933 | jq -r '.result.isSyncing') == "false" ]
+n=0
+until [ $(curl -sS -H "Content-Type: application/json" -d '{"id": 1, "jsonrpc": "2.0", "method": "system_health", "params": []}' http://localhost:9933 | jq -r '.result.isSyncing') == "false" ] | [ $n -ge 30 ]
 do
   printf '.'
   sleep 1
 done
+
+if [ n -ge 30 ]
+then
+  echo "Client is still syncing. We'll try again later."
+  exit 1
+fi
 
 echo "Stopping client..."
 systemctl stop polkadot.service
