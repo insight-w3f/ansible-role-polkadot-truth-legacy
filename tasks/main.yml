@@ -36,21 +36,6 @@
       command: /root/awscli/aws/install
   when: command_result.rc != 0
 
-- name: create awscli config folders
-  file:
-    path: /root/.aws
-    state: directory
-
-- name: create awscli config
-  template:
-    src: config.j2
-    dest: /root/.aws/config
-
-- name: create awscli credentials
-  template:
-    src: credentials.j2
-    dest: /root/.aws/credentials
-
 - name: copy sync script
   template:
     src: blockchain_sync.sh.j2
