@@ -36,6 +36,38 @@
       command: /root/awscli/aws/install
   when: command_result.rc != 0
 
+- name: create block bootstrap download dir
+  file:
+    path: /root/bootstrap
+    state: directory
+    mode: '0755'
+
+- name: download block bootstrap
+  get_url:
+    url: 'https://storage.googleapis.com/kusama-db/db.tar.gz'
+    dest: /root/boostrap/db.tar.gz
+    mode: '0700'
+
+- name: stop polkadot service
+  systemd:
+    name: polkadot.service
+    state: stopped
+  changed_when: false
+
+- name: unarchive block bootstrap
+  unarchive:
+    src: /root/boostrap/db.tar.gz
+    remote_src: yes
+    dest: /data/polkadot/chains/ksmcc3
+    owner: polkadot
+    group: polkadot
+
+- name: start polkadot service
+  systemd:
+    name: polkadot.service
+    state: started
+  changed_when: false
+
 - name: copy sync script
   template:
     src: blockchain_sync.sh.j2
